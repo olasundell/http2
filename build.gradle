@@ -10,17 +10,23 @@ buildscript {
 	}
 }
 
+plugins {
+	id "com.zoltu.git-versioning" version "2.0.19"
+}
+ext {
+	dockerRegistry = 'hub.molnet.svt.se'
+	dockerApp = 'escenic/publishapi'
+// set to 9 character of full sha
+	dockerVersion = 'git rev-parse HEAD'.execute().text.trim()
+	dockerName = "${dockerRegistry}/${dockerApp}:${dockerVersion}"
+}
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
-plugins {
-	id "com.zoltu.git-versioning" version "2.0.19"
-}
-
 jar {
 	baseName = 'http2'
-	version = '0.0.1-SNAPSHOT'
 }
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
