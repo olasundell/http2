@@ -1,0 +1,60 @@
+buildscript {
+	ext {
+		springBootVersion = '1.4.2.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+plugins {
+	id "com.zoltu.git-versioning" version "2.0.19"
+}
+
+jar {
+	baseName = 'http2'
+	version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-undertow')
+	compile group: 'org.mortbay.jetty.alpn', name: 'alpn-boot', version:'8.1.+'
+	compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.4.2'
+
+	compileOnly('org.projectlombok:lombok')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+task copyExtra(type: Copy) {
+	from 'bin'
+	into "$buildDir/libs"
+}
+tasks.processResources.dependsOn copyExtra
+
+task dockerImage (type: Exec, dependsOn: bootRepackage) {
+	commandLine 'docker', 'build', '-t', dockerName, '..'
+}
+
+task dockerPush (type: Exec, dependsOn: dockerImage) {
+	commandLine 'docker', 'push', dockerName
+}
+
+task systemTest(type: Test) {
+	useTestNG {
+		useDefaultListeners = true
+	}
+}
